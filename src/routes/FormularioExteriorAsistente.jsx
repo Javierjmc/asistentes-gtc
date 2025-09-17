@@ -1,4 +1,3 @@
-import { LayoutBasico } from "../layout/LayoutBasico";
 import { useState } from "react";
 import {
   ClipboardDocumentListIcon,
@@ -7,12 +6,14 @@ import {
   ChartBarIcon,
   EyeIcon,
 } from "@heroicons/react/24/outline";
-import { FormularioActividades } from "../components/formulario/FormularioActividades";
-import { FormularioObjetivos } from "../components/formulario/FormularioObjetivos";
-import { FormularioSugerencias } from "../components/formulario/FormularioSugerencias";
-import { FormularioMetricas } from "../components/formulario/FormularioMetricas";
+import { FormularioActividades } from "../components/tablero-asistente/formulario/FormularioActividades";
+import { FormularioObjetivos } from "../components/tablero-asistente/formulario/FormularioObjetivos";
+import { FormularioSugerencias } from "../components/tablero-asistente/formulario/FormularioSugerencias";
+import { FormularioMetricas } from "../components/tablero-asistente/formulario/FormularioMetricas";
+import { VistaPreviaPDF } from "../components/tablero-asistente/formulario/VistaPreviaPDF";
+import { Layout } from "../layout/Layout";
 
-export const FormularioExterior = () => {
+export const FormularioExteriorAsistente = () => {
   const [activeTab, setActiveTab] = useState("Actividades");
 
   const menuItems = [
@@ -24,7 +25,7 @@ export const FormularioExterior = () => {
   ];
 
   return (
-    <LayoutBasico>
+    <Layout rol="asistente">
       <div className="font-sans antialiased text-gray-800">
         <nav className="sm:p-2 w-fit mx-auto">
           <ul className="flex flex-wrap justify-center gap-2 sm:gap-4">
@@ -77,8 +78,11 @@ export const FormularioExterior = () => {
           {activeTab === "Métricas" && (
             <FormularioMetricas />
           )}
+          {activeTab === "Ver PDF" && (
+            <VistaPreviaPDF />
+          )}
         </div>
       </div>
-    </LayoutBasico>
+    </Layout>
   );
 };

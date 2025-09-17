@@ -1,40 +1,30 @@
-import { useState } from "react";
 import { CloudArrowUpIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import { useStore } from "../../../store";
 
 export const FormularioMetricas = () => {
-  const [screenshots, setScreenshots] = useState([]);
-  const [error, setError] = useState("");
+  const {
+    screenshots,
+    error,
+    addScreenshots,
+    removeScreenshot,
+    updateScreenshotTitle,
+    setError,
+  } = useStore();
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length > 0) {
       const filesWithPreview = files.map(file => ({
         file,
         preview: URL.createObjectURL(file),
         title: file.name.split('.').slice(0, -1).join('.'),
       }));
-      setScreenshots(prevScreenshots => [...prevScreenshots, ...filesWithPreview]);
+      addScreenshots(filesWithPreview);
       setError("");
     } else {
       setError("Por favor, selecciona al menos una imagen.");
     }
-  };
-
-  const handleRemoveScreenshot = (index) => {
-    URL.revokeObjectURL(screenshots[index].preview);
-    const updatedScreenshots = screenshots.filter((_, i) => i !== index);
-    setScreenshots(updatedScreenshots);
-  };
-  
-  const handleTitleChange = (index, newTitle) => {
-    const updatedScreenshots = screenshots.map((screenshot, i) => {
-      if (i === index) {
-        return { ...screenshot, title: newTitle };
-      }
-      return screenshot;
-    });
-    setScreenshots(updatedScreenshots);
   };
 
   return (
@@ -92,7 +82,7 @@ export const FormularioMetricas = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => handleRemoveScreenshot(index)}
+                      onClick={() => removeScreenshot(index)}
                       className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       title="Eliminar captura"
                     >
@@ -104,7 +94,7 @@ export const FormularioMetricas = () => {
                         className="w-full p-1 text-xs text-center border rounded-md truncate"
                         placeholder="Añadir título..."
                         value={screenshot.title}
-                        onChange={(e) => handleTitleChange(index, e.target.value)}
+                        onChange={(e) => updateScreenshotTitle(index, e.target.value)}
                       />
                     </div>
                   </div>
