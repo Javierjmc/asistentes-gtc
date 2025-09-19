@@ -1,21 +1,64 @@
 import { create } from 'zustand';
 
+// Función para inicializar el estado con datos del localStorage
+const getInitialReports = () => {
+  try {
+    const serializedReports = localStorage.getItem('reports');
+    return serializedReports ? JSON.parse(serializedReports) : [];
+  } catch (e) {
+    console.error("Error al cargar los informes desde localStorage", e);
+    return [];
+  }
+};
+
+const saveReportsToLocalStorage = (reports) => {
+  try {
+    const serializedReports = JSON.stringify(reports);
+    localStorage.setItem('reports', serializedReports);
+  } catch (e) {
+    console.error("Error al guardar los informes en localStorage", e);
+  }
+};
+
 export const useStore = create((set) => ({
-
-
-
-
   // Estado para Clientes
   clients: [],
   clientForm: { nombre: '', empresa: '', asistentes: '' },
   editingClientIndex: null,
   searchQuery: '',
 
+  // Estado para Asistentes
+  asistentes: [],
+  asistenteForm: { nombre: '', empresa: '', email: '' },
+  editingAsistenteIndex: null,
+
+  // Estado para Reportes (ahora persistente)
+  reports: getInitialReports(),
+
+  // Estado para Actividades
+  actividades: [],
+  actividadForm: { titulo: '', descripcion: '' },
+  editingActividadIndex: null,
+  error: '',
+
+  // Estado para Objetivos
+  goals: [],
+  goalForm: { title: '', description: '' },
+  editingGoalIndex: null,
+
+  // Estado para Sugerencias
+  sugerencias: [],
+  sugerenciaForm: { texto: '' },
+  editingSugerenciaIndex: null,
+
+  // Estado para Métricas
+  screenshots: [],
+
   // Acciones para Clientes
   setClientForm: (form) => set({ clientForm: form }),
   setEditingClientIndex: (index) => set({ editingClientIndex: index }),
+  setSearchQuery: (query) => set({ searchQuery: query }),
   addClient: (client) => set((state) => {
-    // Añadir los asistentes del nuevo cliente a la lista global de asistentes
     const newAsistentes = client.asistentes.map(nombre => ({ nombre, empresa: client.empresa, email: '' }));
     return {
       clients: [...state.clients, { nombre: client.nombre, empresa: client.empresa }],
@@ -24,35 +67,24 @@ export const useStore = create((set) => ({
     };
   }),
   updateClient: (index, client) => set((state) => {
-    // Eliminar los asistentes de la empresa original antes de añadir los nuevos
     const oldEmpresa = state.clients[index].empresa;
     const updatedAsistentes = state.asistentes.filter(asistente => asistente.empresa !== oldEmpresa);
     
-    // Crear y añadir los nuevos asistentes del cliente editado a la lista global
     const newAsistentes = client.asistentes.map(nombre => ({ nombre, empresa: client.empresa, email: '' }));
-
+    
     return {
       clients: state.clients.map((item, i) => i === index ? { nombre: client.nombre, empresa: client.empresa } : item),
       asistentes: [...updatedAsistentes, ...newAsistentes],
-      editingClientIndex: null,
-      clientForm: { nombre: '', empresa: '', asistentes: '' },
       error: '',
     };
   }),
   removeClient: (index) => set((state) => {
-    // Eliminar el cliente y sus asistentes asociados
-    const empresa = state.clients[index].empresa;
+    const empresaToRemove = state.clients[index].empresa;
     return {
       clients: state.clients.filter((_, i) => i !== index),
-      asistentes: state.asistentes.filter(asistente => asistente.empresa !== empresa),
+      asistentes: state.asistentes.filter(asistente => asistente.empresa !== empresaToRemove),
     };
   }),
-  setSearchQuery: (query) => set({ searchQuery: query }),
-
-  // Estado para Asistentes
-  asistentes: [],
-  asistenteForm: { nombre: '', empresa: '', email: '' },
-  editingAsistenteIndex: null,
 
   // Acciones para Asistentes
   setAsistenteForm: (form) => set({ asistenteForm: form }),
@@ -62,22 +94,18 @@ export const useStore = create((set) => ({
   })),
   updateAsistente: (index, asistente) => set((state) => ({
     asistentes: state.asistentes.map((item, i) => i === index ? asistente : item),
-    editingAsistenteIndex: null,
   })),
   removeAsistente: (index) => set((state) => ({
     asistentes: state.asistentes.filter((_, i) => i !== index),
   })),
 
-
-
-
-
-
-  // Estado para Actividades
-  actividades: [],
-  actividadForm: { titulo: '', descripcion: '' },
-  editingActividadIndex: null,
-
+  // Acciones para Reportes (ahora persistente)
+  saveReport: (report) => set((state) => {
+    const newReports = [...state.reports, report];
+    saveReportsToLocalStorage(newReports);
+    return { reports: newReports };
+  }),
+  
   // Acciones para Actividades
   setActividadForm: (form) => set({ actividadForm: form }),
   setEditingActividadIndex: (index) => set({ editingActividadIndex: index }),
@@ -95,11 +123,7 @@ export const useStore = create((set) => ({
   removeActividad: (index) => set((state) => ({
     actividades: state.actividades.filter((_, i) => i !== index),
   })),
-
-  // Estado para Objetivos
-  goals: [],
-  goalForm: { title: '', description: '' },
-  editingGoalIndex: null,
+  setError: (message) => set({ error: message }),
 
   // Acciones para Objetivos
   setGoalForm: (form) => set({ goalForm: form }),
@@ -119,11 +143,6 @@ export const useStore = create((set) => ({
     goals: state.goals.filter((_, i) => i !== index),
   })),
 
-  // Estado para Sugerencias
-  sugerencias: [],
-  sugerenciaForm: { texto: '' },
-  editingSugerenciaIndex: null,
-
   // Acciones para Sugerencias
   setSugerenciaForm: (form) => set({ sugerenciaForm: form }),
   setEditingSugerenciaIndex: (index) => set({ editingSugerenciaIndex: index }),
@@ -142,27 +161,31 @@ export const useStore = create((set) => ({
     sugerencias: state.sugerencias.filter((_, i) => i !== index),
   })),
 
-  // Estado para Métricas
-  screenshots: [],
-  
   // Acciones para Métricas
   addScreenshots: (newScreenshots) => set((state) => ({
     screenshots: [...state.screenshots, ...newScreenshots],
   })),
+  updateScreenshotTitle: (index, title) => set((state) => ({
+    screenshots: state.screenshots.map((item, i) =>
+      i === index ? { ...item, title } : item
+    ),
+  })),
   removeScreenshot: (index) => set((state) => {
-    // Revocar URL para liberar memoria antes de eliminar
     URL.revokeObjectURL(state.screenshots[index].preview);
     return {
       screenshots: state.screenshots.filter((_, i) => i !== index),
     };
   }),
-  updateScreenshotTitle: (index, newTitle) => set((state) => ({
-    screenshots: state.screenshots.map((screenshot, i) => 
-      i === index ? { ...screenshot, title: newTitle } : screenshot
-    ),
-  })),
 
-  // Estado y acciones para errores (compartido entre todos)
-  error: '',
-  setError: (message) => set({ error: message }),
+  // Acciones para limpiar los formularios del asistente
+  resetForms: () => set({
+    actividades: [],
+    goals: [],
+    sugerencias: [],
+    screenshots: [],
+    actividadForm: { titulo: '', descripcion: '' },
+    goalForm: { title: '', description: '' },
+    sugerenciaForm: { texto: '' },
+    error: '',
+  }),
 }));
