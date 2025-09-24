@@ -4,7 +4,7 @@ import { Layout } from "../layout/Layout"
 export const Vista = () => {
   return (
     <Layout rol="cliente">
-      <PDFReport />
+      <h1>Vista</h1>
     </Layout>
   )
 }

@@ -1,138 +1,78 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Layout } from "../layout/Layout";
+import { Titulo } from "../components/Titulo";
 import { useStore } from "../store";
 
 export const InformesAdministrador = () => {
-  const { reports } = useStore();
-  const [selectedReportId, setSelectedReportId] = useState(null);
+  const { reports, fetchReports, /* approveReport, */ sendReport } = useStore();
 
-  // Componente para mostrar un informe detallado
-  const ReportDetail = ({ report }) => {
-    return (
-      <div className="bg-slate-100 p-6 rounded-b-lg shadow-inner border-t border-gray-300">
-        
-        {/* Sección de Actividades */}
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-blue-700">Actividades</h3>
-          <ul className="list-disc list-inside space-y-1 mt-1">
-            {report.actividades.length > 0 ? (
-              report.actividades.map((act, index) => (
-                <li key={index}>
-                  <span className="font-medium">{act.titulo}:</span>{" "}
-                  {act.descripcion}
-                </li>
-              ))
-            ) : (
-              <p className="text-gray-500 italic">No hay actividades registradas.</p>
-            )}
-          </ul>
-        </div>
-        
-        {/* Sección de Objetivos */}
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-blue-700">Objetivos</h3>
-          <ul className="list-disc list-inside space-y-1 mt-1">
-            {report.goals.length > 0 ? (
-              report.goals.map((goal, index) => (
-                <li key={index}>
-                  <span className="font-medium">{goal.title}:</span>{" "}
-                  {goal.description}
-                </li>
-              ))
-            ) : (
-              <p className="text-gray-500 italic">No hay objetivos registrados.</p>
-            )}
-          </ul>
-        </div>
-        
-        {/* Sección de Sugerencias */}
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-blue-700">Sugerencias</h3>
-          <ul className="list-disc list-inside space-y-1 mt-1">
-            {report.sugerencias.length > 0 ? (
-              report.sugerencias.map((sug, index) => (
-                <li key={index}>{sug.texto}</li>
-              ))
-            ) : (
-              <p className="text-gray-500 italic">No hay sugerencias registradas.</p>
-            )}
-          </ul>
-        </div>
-        
-        {/* Sección de Métricas */}
-        <div>
-          <h3 className="text-lg font-semibold text-blue-700">Métricas</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-2">
-            {report.screenshots.length > 0 ? (
-              report.screenshots.map((screen, index) => (
-                <div key={index} className="flex flex-col items-center">
-                  <img
-                    src={screen.preview}
-                    alt={screen.title}
-                    className="w-full h-24 object-cover rounded-md shadow-sm border border-gray-300"
-                  />
-                  <span className="mt-1 text-sm text-center truncate w-full">
-                    {screen.title}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 italic col-span-full">No hay capturas de pantalla.</p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  // Aprobación deshabilitada
+  // const handleApprove = async (reporteId) => {
+  //   const res = await approveReport(reporteId);
+  //   if (!res.success) alert(res.error);
+  // };
+
+  const handleSendReport = async (reporteId) => {
+    const res = await sendReport(reporteId);
+    if (!res.success) alert(res.error);
   };
 
   return (
     <Layout rol="administrador">
-      <div className="container mx-auto p-4">
-        <h1 className="text-4xl text-white font-bold mb-6">Informes de Asistentes</h1>
-        
-        {reports.length > 0 ? (
-          <div className="grid gap-4">
-            {reports.map((report) => (
-              <div 
-                key={report.id}
-                className="rounded-lg shadow-md overflow-hidden" 
+      <section className="bg-slate-300 py-6 px-2 sm:px-6 sm:rounded-lg grid gap-2">
+        <Titulo contenido="Informes" />
+        <ul className="rounded-lg overflow-hidden shadow border border-slate-400">
+          <li className="grid grid-cols-4 bg-slate-700 text-slate-200 font-semibold text-center text-xs sm:text-sm">
+            <span className="py-2 col-span-1">Asistente</span>
+            <span className="py-2 col-span-1">Cliente</span>
+            <span className="py-2 col-span-1">Fecha</span>
+            <span className="py-2 col-span-1">Acciones</span>
+          </li>
+          {reports.length > 0 ? (
+            reports.map((reporte, index) => (
+              <li
+                key={reporte._id || index}
+                className="grid grid-cols-4 bg-white text-slate-800 border-t border-slate-400 text-xs sm:text-sm even:bg-gray-50 hover:bg-gray-100 transition-all"
               >
-                {/* Cabecera del acordeón */}
-                <div 
-                  className={`p-4 cursor-pointer flex justify-between items-center transition-colors ${selectedReportId === report.id ? 'bg-slate-400 rounded-t-lg' : 'bg-slate-300 rounded-lg hover:bg-slate-400'}`}
-                  onClick={() => setSelectedReportId(selectedReportId === report.id ? null : report.id)}
-                >
-                  <h2 className="text-lg font-semibold">Informe del {report.date}</h2>
-                  {/* Icono de flecha animado */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className={`h-6 w-6 text-gray-700 transition-transform duration-300 transform ${selectedReportId === report.id ? "rotate-180" : ""}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
+                <span className="text-center py-2 col-span-1">
+                  {reporte.asistente ? reporte.asistente.nombre : 'Desconocido'}
+                </span>
+                <span className="text-center py-2 col-span-1">
+                  {reporte.cliente ? reporte.cliente.nombre : 'Desconocido'}
+                </span>
+                <span className="text-center py-2 col-span-1">
+                  {reporte.fecha_creacion || ''}
+                </span>
+                <div className="flex justify-center items-center gap-2 col-span-1">
+                  <Link to={`/reportes-administrador/${reporte._id || index}`}>
+                    <button className="bg-blue-500 text-white p-1 rounded-full hover:bg-blue-600 transition">
+                      Ver
+                    </button>
+                  </Link>
+                  {/* Botón Aprobar deshabilitado */}
+                  {reporte.estado !== 'enviado' && (
+                    <button 
+                      onClick={() => handleSendReport(reporte._id || index)}
+                      className="bg-green-500 text-white p-1 rounded-full hover:bg-green-600 transition"
+                    >
+                      Enviar
+                    </button>
+                  )}
                 </div>
-
-                {/* Contenido del acordeón con animación de deslizamiento */}
-                <div 
-                  className={`transition-all duration-300 ease-in-out ${selectedReportId === report.id ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}`}
-                >
-                  {selectedReportId === report.id && <ReportDetail report={report} />}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-300 italic text-lg">No hay informes disponibles. Pide a un asistente que guarde un informe.</p>
-        )}
-      </div>
+              </li>
+            ))
+          ) : (
+            <li className="text-center py-4 text-slate-500 col-span-4">
+              No se encontraron reportes.
+            </li>
+          )}
+        </ul>
+      </section>
     </Layout>
   );
 };

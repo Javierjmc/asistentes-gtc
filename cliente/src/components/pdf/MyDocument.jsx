@@ -1,53 +1,80 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
-// 🎨 Estilos
+// 🎨 Estilos profesionales
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
+    paddingTop: 50,
+    paddingBottom: 50,
+    paddingHorizontal: 40,
     fontSize: 11,
     fontFamily: "Helvetica",
-    lineHeight: 1.5,
+    lineHeight: 1.6,
+    backgroundColor: "#f7f7f7",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 30,
-    borderBottomWidth: 1.5,
-    borderBottomColor: "#005f73",
-    paddingBottom: 10,
+    marginBottom: 35,
+    borderBottomWidth: 2,
+    borderBottomColor: "#007c91",
+    paddingBottom: 12,
   },
   logo: {
-    width: 120,
-    height: 60,
+    width: 130,
+    height: 65,
     objectFit: "contain",
   },
   headerText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#005f73",
+    color: "#007c91",
   },
-  section: { marginBottom: 25 },
+  section: {
+    marginBottom: 30,
+    padding: 10,
+    borderRadius: 6,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 2,
+  },
   title: {
     fontSize: 16,
-    marginBottom: 12,
     fontWeight: "bold",
-    color: "#0a9396",
+    color: "#005f73",
+    marginBottom: 10,
     textTransform: "uppercase",
-    borderBottom: "1 solid #ccc",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
     paddingBottom: 4,
   },
-  text: { fontSize: 11, marginBottom: 6 },
-  table: { display: "table", width: "auto", marginBottom: 12 },
-  tableRow: { flexDirection: "row" },
-  tableRowAlt: { flexDirection: "row", backgroundColor: "#fafafa" },
+  text: {
+    fontSize: 11,
+    marginBottom: 6,
+    color: "#333",
+  },
+  table: {
+    display: "table",
+    width: "auto",
+    marginBottom: 12,
+    borderSpacing: 0,
+  },
+  tableRow: {
+    flexDirection: "row",
+  },
+  tableRowAlt: {
+    flexDirection: "row",
+    backgroundColor: "#f0f0f0",
+  },
   tableColHeader: {
     width: "50%",
     borderStyle: "solid",
     borderWidth: 1,
-    borderColor: "#ccc",
-    backgroundColor: "#005f73",
+    borderColor: "#d1d1d1",
+    backgroundColor: "#007c91",
     padding: 6,
     color: "#fff",
     fontWeight: "bold",
@@ -57,21 +84,9 @@ const styles = StyleSheet.create({
     width: "50%",
     borderStyle: "solid",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#d1d1d1",
     padding: 6,
-  },
-  image: {
-    width: "100%",
-    height: 200,
-    marginBottom: 8,
-    objectFit: "cover",
-    borderRadius: 6,
-  },
-  caption: {
-    textAlign: "center",
-    fontSize: 10,
-    marginBottom: 16,
-    color: "#444",
+    color: "#333",
   },
   footer: {
     position: "absolute",
@@ -82,100 +97,28 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: "#555",
   },
+  subtitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#007c91",
+    marginTop: 8,
+    marginBottom: 4,
+  },
 });
 
-// 📊 Data de prueba
-const report = {
-  title: "Informe Mensual Marketing",
-  company: "Global Talent Connections",
-  assistant: "Gabriel Peña",
-  department: "Marketing Digital",
-  date: "2025-07-30",
-  period: "Julio 2025",
-  summary:
-    "Durante este mes se avanzó significativamente en campañas digitales, generando leads de calidad y mejorando la presencia en redes sociales.",
-  activities: [
-    {
-      category: "Documentación y protocolos",
-      description: "Actualización de manuales de SEO para nuevas campañas.",
-    },
-    {
-      category: "Diseño y comunicación",
-      description: "Creación de 12 piezas gráficas para redes sociales.",
-    },
-    {
-      category: "Escritura y Diseño Web",
-      description:
-        "Publicación de 4 artículos en el blog corporativo y revisión de métricas.",
-    },
-    {
-      category: "Marketing",
-      description: "Optimización de la campaña de Google Ads.",
-    },
-    {
-      category: "Estudio y Análisis",
-      description:
-        "Informe de tendencias de búsqueda en Pinterest y Google Trends.",
-    },
-  ],
-  objectives: [
-    {
-      planned: "Lanzar la campaña de cocinas",
-      achieved: "Campaña publicada con +1500 clics en el primer mes.",
-    },
-    {
-      planned: "Incrementar contenido en redes",
-      achieved: "Se alcanzaron +2,000 seguidores nuevos en Instagram.",
-    },
-    {
-      planned: "Preparar campaña de baños (fase 2)",
-      achieved: "Se completó el 80% del contenido, listo para agosto.",
-    },
-  ],
-  suggestions: [
-    "Optimizar títulos y meta descripciones en artículos de blog para mejorar el CTR orgánico. Esto permitirá que más usuarios encuentren los contenidos de manera natural en buscadores.",
-    "Incrementar el uso de reels en Instagram y colaboraciones externas, con el objetivo de ampliar el alcance de la marca en audiencias jóvenes."
-  ],
-  metrics: {
-    website: {
-      title: "Rendimiento del sitio web",
-      image: "https://via.placeholder.com/600x300.png?text=Website+Stats",
-    },
-    social: {
-      title: "Crecimiento en redes sociales",
-      image: "https://via.placeholder.com/600x300.png?text=Social+Media+Stats",
-    },
-  },
-  monitoring: {
-    hoursWorked: "162 hrs con 30 mins",
-    activeDays: 19,
-    avgDailyWork: "8:13 h",
-    hubstaff: {
-      workRating: "100%",
-      tasks: [
-        "Crear contenido para redes sociales",
-        "Redacción de artículos de blog",
-        "Diseño de material gráfico",
-      ],
-      tools: ["Opera GX Browser", "Google Docs"],
-    },
-  },
-  support: {
-    email: "calidad@globaltalentconnections.net",
-    whatsapp: "+34 622 85 04 23",
-    hours: "Lunes a Viernes 13:00 - 20:00 (España)",
-  },
-};
-
-// 📄 Documento
-const MyDocument = () => (
+// 📄 Documento dinámico
+const MyDocument = ({ report, adminTexto }) => (
   <Document>
     {/* Portada */}
     <Page size="A4" style={styles.page}>
       <View style={styles.header}>
-        <Image style={styles.logo} src="https://recursos-gtc.vercel.app/assets/logo-gtc.png" />
+        <Image
+          style={styles.logo}
+          src="https://recursos-gtc.vercel.app/assets/logo-gtc.png"
+        />
         <Text style={styles.headerText}>{report.company}</Text>
       </View>
+
       <View style={styles.section}>
         <Text style={styles.title}>{report.title}</Text>
         <Text style={styles.text}>Asistente: {report.assistant}</Text>
@@ -183,10 +126,12 @@ const MyDocument = () => (
         <Text style={styles.text}>Fecha: {report.date}</Text>
         <Text style={styles.text}>Periodo: {report.period}</Text>
       </View>
+
       <View style={styles.section}>
         <Text style={styles.title}>Resumen Ejecutivo</Text>
         <Text style={styles.text}>{report.summary}</Text>
       </View>
+
       <Text
         style={styles.footer}
         render={({ pageNumber, totalPages }) =>
@@ -224,6 +169,7 @@ const MyDocument = () => (
           ))}
         </View>
       </View>
+
       <Text
         style={styles.footer}
         render={({ pageNumber, totalPages }) =>
@@ -261,6 +207,7 @@ const MyDocument = () => (
           ))}
         </View>
       </View>
+
       <Text
         style={styles.footer}
         render={({ pageNumber, totalPages }) =>
@@ -280,24 +227,7 @@ const MyDocument = () => (
           </Text>
         ))}
       </View>
-      <Text
-        style={styles.footer}
-        render={({ pageNumber, totalPages }) =>
-          `CALIDAD | Página ${pageNumber} de ${totalPages}`
-        }
-        fixed
-      />
-    </Page>
 
-    {/* Métricas */}
-    <Page size="A4" style={styles.page}>
-      <View style={styles.section}>
-        <Text style={styles.title}>4. Métricas</Text>
-        <Image style={styles.image} src={report.metrics.website.image} />
-        <Text style={styles.caption}>Rendimiento del sitio web</Text>
-        <Image style={styles.image} src={report.metrics.social.image} />
-        <Text style={styles.caption}>Crecimiento en redes sociales</Text>
-      </View>
       <Text
         style={styles.footer}
         render={({ pageNumber, totalPages }) =>
@@ -310,7 +240,7 @@ const MyDocument = () => (
     {/* Monitoreo */}
     <Page size="A4" style={styles.page}>
       <View style={styles.section}>
-        <Text style={styles.title}>5. Monitoreo</Text>
+        <Text style={styles.title}>4. Monitoreo</Text>
         <Text style={styles.text}>
           Horas trabajadas: {report.monitoring.hoursWorked}
         </Text>
@@ -323,19 +253,22 @@ const MyDocument = () => (
         <Text style={styles.text}>
           Calificación Hubstaff: {report.monitoring.hubstaff.workRating}
         </Text>
-        <Text style={{ marginTop: 8, fontWeight: "bold" }}>Tareas:</Text>
+
+        <Text style={styles.subtitle}>Tareas</Text>
         {report.monitoring.hubstaff.tasks.map((t, i) => (
           <Text key={i} style={styles.text}>
             - {t}
           </Text>
         ))}
-        <Text style={{ marginTop: 8, fontWeight: "bold" }}>Herramientas:</Text>
+
+        <Text style={styles.subtitle}>Herramientas</Text>
         {report.monitoring.hubstaff.tools.map((tool, i) => (
           <Text key={i} style={styles.text}>
             - {tool}
           </Text>
         ))}
       </View>
+
       <Text
         style={styles.footer}
         render={({ pageNumber, totalPages }) =>
@@ -348,11 +281,12 @@ const MyDocument = () => (
     {/* Soporte */}
     <Page size="A4" style={styles.page}>
       <View style={styles.section}>
-        <Text style={styles.title}>6. Soporte</Text>
+        <Text style={styles.title}>5. Soporte</Text>
         <Text style={styles.text}>Email: {report.support.email}</Text>
         <Text style={styles.text}>WhatsApp: {report.support.whatsapp}</Text>
         <Text style={styles.text}>Horario: {report.support.hours}</Text>
       </View>
+
       <Text
         style={styles.footer}
         render={({ pageNumber, totalPages }) =>
@@ -361,6 +295,24 @@ const MyDocument = () => (
         fixed
       />
     </Page>
+
+    {/* Observaciones del administrador */}
+    {adminTexto && (
+      <Page size="A4" style={styles.page}>
+        <View style={styles.section}>
+          <Text style={styles.title}>Observaciones del Administrador</Text>
+          <Text style={styles.text}>{adminTexto}</Text>
+        </View>
+
+        <Text
+          style={styles.footer}
+          render={({ pageNumber, totalPages }) =>
+            `CALIDAD | Página ${pageNumber} de ${totalPages}`
+          }
+          fixed
+        />
+      </Page>
+    )}
   </Document>
 );
 

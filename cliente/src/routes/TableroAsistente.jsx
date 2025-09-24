@@ -5,7 +5,7 @@ import MyDocument from "../components/pdf/MyComponent";
 export const TableroAsistente = () => {
   return (
     <Layout rol="asistente">
-      <PDFViewer>
+      <PDFViewer style={{ width: '100%', height: '80vh' }}>
         <MyDocument />
       </PDFViewer>
     </Layout>
