@@ -5,7 +5,7 @@ from flask_bcrypt import Bcrypt
 from flask_cors import CORS
 from bson.objectid import ObjectId
 from datetime import datetime
-from functools import wraps  # <-- ¡Esta es la importación que faltaba!
+from functools import wraps  
 import os
 
 try:
