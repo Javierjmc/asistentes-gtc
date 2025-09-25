@@ -10,6 +10,7 @@ export const AsistentesAdministrador = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
   const fetchAsistentes = async () => {
     setIsLoading(true);
@@ -27,7 +28,7 @@ export const AsistentesAdministrador = () => {
         Authorization: `Bearer ${token}`,
       };
 
-      const response = await fetch("http://127.0.0.1:5000/asistentes", { headers });
+      const response = await fetch(API_BASE_URL+"/asistentes", { headers });
 
       if (!response.ok) {
         throw new Error("Error al obtener datos del servidor.");

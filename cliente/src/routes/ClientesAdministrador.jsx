@@ -14,6 +14,7 @@ export const ClientesAdministrador = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
   const fetchClientsAndAsistentes = async () => {
     setIsLoading(true);
@@ -32,8 +33,8 @@ export const ClientesAdministrador = () => {
       };
 
       const [clientsResponse, asistentesResponse] = await Promise.all([
-        fetch("http://127.0.0.1:5000/clientes", { headers }),
-        fetch("http://127.0.0.1:5000/asistentes", { headers }),
+        fetch(API_BASE_URL+"/clientes", { headers }),
+        fetch(API_BASE_URL+"/asistentes", { headers }),
       ]);
 
       if (!clientsResponse.ok || !asistentesResponse.ok) {

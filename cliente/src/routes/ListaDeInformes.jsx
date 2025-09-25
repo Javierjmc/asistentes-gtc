@@ -3,10 +3,11 @@ import axios from 'axios';
 
 function ListaDeInformes() {
   const [informes, setInformes] = useState([]);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
   useEffect(() => {
     // La URL debe coincidir con la dirección de tu servidor de Flask
-    axios.get('http://localhost:5000/datos')
+    axios.get(API_BASE_URL+'/datos')
       .then(response => {
         setInformes(response.data);
       })

@@ -5,6 +5,8 @@ export const AsignarAsistente = ({ onClose, client, asistentesDisponibles }) => 
     client.asistentes_asignados.map((a) => a.id)
   );
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+
   const handleCheckboxChange = (e) => {
     const { value, checked } = e.target;
     setSelectedAsistentes(prev => 
@@ -17,7 +19,7 @@ export const AsignarAsistente = ({ onClose, client, asistentesDisponibles }) => 
     const token = localStorage.getItem("access_token");
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/clientes/${client._id}/asistentes`, {
+      const response = await fetch(`${API_BASE_URL}/clientes/${client._id}/asistentes`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

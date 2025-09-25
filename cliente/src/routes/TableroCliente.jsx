@@ -12,6 +12,8 @@ export const TableroCliente = () => {
   const [expanded, setExpanded] = useState(null)
   const [estadoFiltro, setEstadoFiltro] = useState("todos")
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
+
   useEffect(() => {
     const token = localStorage.getItem("access_token")
     if (!token) {
@@ -24,8 +26,8 @@ export const TableroCliente = () => {
     const fetchAll = async () => {
       try {
         const [aRes, rRes] = await Promise.all([
-          fetch("http://127.0.0.1:5000/cliente/mis-asistentes", { headers }),
-          fetch("http://127.0.0.1:5000/reportes/mios", { headers }),
+          fetch(API_BASE_URL+"/cliente/mis-asistentes", { headers }),
+          fetch(API_BASE_URL+"/reportes/mios", { headers }),
         ])
         if (!aRes.ok) throw new Error("Error al cargar asistentes")
         if (!rRes.ok) throw new Error("Error al cargar reportes")

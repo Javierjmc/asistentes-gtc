@@ -8,6 +8,7 @@ export const SeleccionClienteAsistente = () => {
   const [clients, setClients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -22,7 +23,7 @@ export const SeleccionClienteAsistente = () => {
       }
 
       try {
-        const response = await fetch("http://127.0.0.1:5000/asistente/mis-clientes", {
+        const response = await fetch(API_BASE_URL+"/asistente/mis-clientes", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
