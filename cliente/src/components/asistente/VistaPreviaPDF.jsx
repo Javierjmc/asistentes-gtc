@@ -28,7 +28,7 @@ export const VistaPreviaPDF = () => {
         ) : (
           <ul className="list-disc list-inside space-y-3">
             {actividades.map((actividad, index) => (
-              <li key={index} className="pl-2">
+              <li key={index} className="pl-2 text-start text-sm">
                 <span className="font-semibold">{actividad.titulo}: </span>
                 {actividad.descripcion}
               </li>
@@ -50,7 +50,7 @@ export const VistaPreviaPDF = () => {
         ) : (
           <ul className="list-disc list-inside space-y-3">
             {goals.map((goal, index) => (
-              <li key={index} className="pl-2">
+              <li key={index} className="pl-2 text-start text-sm">
                 <span className="font-semibold">{goal.title}: </span>
                 {goal.description}
               </li>
@@ -72,7 +72,7 @@ export const VistaPreviaPDF = () => {
         ) : (
           <ul className="list-disc list-inside space-y-3">
             {sugerencias.map((sugerencia, index) => (
-              <li key={index} className="pl-2">{sugerencia.texto}</li>
+              <li key={index} className="pl-2 text-start text-sm">{sugerencia.texto}</li>
             ))}
           </ul>
         )}

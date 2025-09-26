@@ -77,7 +77,7 @@ export const Layout = ({ children }) => {
     }
 
     return (
-        <main className="min-h-screen w-full font-sans antialiased relative bg-slate-100">
+        <main className="min-h-screen w-full font-sans antialiased relative bg-gradient-to-b from-blue-900 to-black">
             <Header navegacion={navegacion} rol={userRole} onLogout={logout} />
             <section className="min-h-screen max-w-6xl mx-auto py-8">
                 {children}

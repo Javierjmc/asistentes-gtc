@@ -10,7 +10,7 @@ const PDFReport = ({ reporte, adminTexto }) => {
 
   // Adaptador simple para convertir tu reporte en el formato esperado por MyDocument
   const mapReporteToReport = (reporte) => ({
-    company: "Mi Empresa",
+    company: reporte.cliente.nombre,
     title: reporte.titulo,
     assistant: reporte.asistente?.nombre,
     department: "Ventas",
@@ -18,12 +18,12 @@ const PDFReport = ({ reporte, adminTexto }) => {
     period: "Semana actual",
     summary: "Resumen automático del reporte.",
     activities: (reporte.contenido?.actividades || []).map((a) => ({
-      category: "General", // si no tienes categoría
-      description: a.texto || "",
+      category: a.titulo, // si no tienes categoría
+      description: a.descripcion || "",
     })),
     objectives: (reporte.contenido?.goals || []).map((g) => ({
-      planned: g.planificado || "",
-      achieved: g.cumplido || "",
+      planned: g.title || "",
+      achieved: g.description || "",
     })),
     suggestions: (reporte.contenido?.sugerencias || []).map((s) => s.texto || ""),
     monitoring: {

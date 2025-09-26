@@ -76,9 +76,9 @@ export const ReporteDetalleAdmin = () => {
           setSugerencias(data.contenido.sugerencias || []);
           // setScreenshots(data.contenido.screenshots || []); // métricas deshabilitadas
         }
-    if (typeof data.admin_texto === 'string') setAdminTexto(data.admin_texto);
-    // Comentado temporalmente: carga inicial de imágenes del administrador
-    // if (Array.isArray(data.admin_imagenes)) setAdminImagenes(data.admin_imagenes.map((src) => ({ preview: src })));
+        if (typeof data.admin_texto === 'string') setAdminTexto(data.admin_texto);
+        // Comentado temporalmente: carga inicial de imágenes del administrador
+        // if (Array.isArray(data.admin_imagenes)) setAdminImagenes(data.admin_imagenes.map((src) => ({ preview: src })));
       } catch (e) {
         setError(e.message || 'Error al obtener el reporte.');
       } finally {
@@ -168,7 +168,7 @@ export const ReporteDetalleAdmin = () => {
         <h2 className="text-center font-extrabold text-2xl mb-4 text-slate-800">
           Detalles y Edición de Reporte
         </h2>
-        
+
         {/* Navegación del formulario */}
         <nav className="flex justify-center border-b border-gray-300">
           <ul className="flex justify-center flex-wrap gap-4 sm:gap-6">
@@ -179,18 +179,16 @@ export const ReporteDetalleAdmin = () => {
                   <button
                     onClick={() => setActiveTab(item.name)}
                     className={`flex items-center justify-center py-2 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-colors duration-200 border-b-2
-                      ${
-                        activeTab === item.name
-                          ? "border-blue-700 text-blue-700"
-                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      ${activeTab === item.name
+                        ? "border-blue-700 text-blue-700"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                       }`}
                   >
                     <IconComponent
-                      className={`h-5 w-5 mr-1 ${
-                        activeTab === item.name
+                      className={`h-5 w-5 mr-1 ${activeTab === item.name
                           ? "text-blue-700"
                           : "text-slate-500 group-hover:text-slate-700"
-                      }`}
+                        }`}
                     />
                     <span className="hidden sm:flex">{item.name}</span>
                   </button>
@@ -223,14 +221,18 @@ export const ReporteDetalleAdmin = () => {
                   Borrar Formulario
                 </button>
               </div>
-              <div className="bg-white p-4 rounded-lg border border-gray-200 text-left space-y-3">
-                <label className="block font-semibold text-slate-700">Notas del Administrador</label>
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 text-left space-y-4">
+                <label htmlFor="admin-notes" className="block text-xl font-bold text-gray-800">
+                  Notas del Administrador
+                </label>
                 <textarea
+                  id="admin-notes" // Añadido id para accesibilidad con la etiqueta
                   value={adminTexto}
                   onChange={(e) => setAdminTexto(e.target.value)}
-                  className="w-full min-h-28 p-2 border rounded-md"
-                  placeholder="Escribe comentarios o notas para el cliente..."
+                  className="w-full min-h-[140px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 ease-in-out resize-y text-gray-700 placeholder-gray-400"
+                  placeholder="Escribe comentarios o notas importantes para el cliente aquí..."
                 />
+
                 {/* Comentado temporalmente: UI para imágenes del administrador */}
                 {/* <div className="space-y-2">
                   <label className="block font-semibold text-slate-700">Imágenes del Administrador</label>
@@ -260,7 +262,7 @@ export const ReporteDetalleAdmin = () => {
             <div className="h-[80vh] flex flex-col gap-3">
               <div className="flex items-center gap-3">
                 <PDFReport reporte={reporte} adminTexto={adminTexto} />
-                
+
                 {/* <PDFDownloadLink document={memoDoc} fileName={`${reporte?.titulo || 'reporte'}.pdf`} className="px-3 py-1 rounded text-white bg-blue-600 hover:bg-blue-700">
                   {({ loading, error }) => loading ? 'Generando PDF…' : (error ? 'Error al generar PDF' : 'Descargar PDF')}
                 </PDFDownloadLink>
