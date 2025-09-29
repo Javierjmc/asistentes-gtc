@@ -20,16 +20,7 @@ except Exception:
 app = Flask(__name__)
 FRONTEND_URL = "https://asistentes-gtc.vercel.app" 
 
-CORS(app, resources={
-    # Aplica esta configuración a todas las rutas (todas las rutas de la API)
-    r"/*": {
-        "origins": FRONTEND_URL,
-        # Necesario para el correcto manejo de POST, PUT, DELETE y pre-vuelo OPTIONS
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
-        # Esencial para peticiones que envían tokens JWT en el header 'Authorization'
-        "supports_credentials": True 
-    }
-})
+CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
