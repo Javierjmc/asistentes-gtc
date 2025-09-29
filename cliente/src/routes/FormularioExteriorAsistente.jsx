@@ -11,7 +11,7 @@ import {
 import { FormularioActividades } from "../components/asistente/FormularioActividades";
 import { FormularioObjetivos } from "../components/asistente/FormularioObjetivos";
 import { FormularioSugerencias } from "../components/asistente/FormularioSugerencias";
-// import { FormularioMetricas } from "../components/asistente/FormularioMetricas";
+import { FormularioMetricas } from "../components/asistente/FormularioMetricas";
 import { VistaPreviaPDF } from "../components/asistente/VistaPreviaPDF";
 import { Layout } from "../layout/Layout";
 import { useStore } from "../store";
@@ -26,24 +26,29 @@ export const FormularioExteriorAsistente = () => {
     actividades,
     goals,
     sugerencias,
-    // screenshots, // métricas deshabilitadas
+    screenshots, // métricas deshabilitadas
     saveReport,
     resetForms,
   } = useStore();
 
   const handleSaveReport = async () => {
     try {
-      const contenido = {
-        actividades,
-        goals,
-        sugerencias,
-        // screenshots, // métricas deshabilitadas
-      };
+      // Verificar que todas las imágenes se hayan subido correctamente
+      const imagenesPendientes = screenshots.filter(s => s.uploading);
+      if (imagenesPendientes.length > 0) {
+        alert("Por favor espera a que se terminen de subir todas las imágenes antes de guardar el reporte.");
+        return;
+      }
 
       const newReport = {
         cliente_id: clienteId,
         titulo: `Reporte ${new Date().toLocaleDateString('es-ES')}`,
-        contenido,
+        contenido: {
+          actividades,
+          goals,
+          sugerencias,
+        },
+        screenshots, // Incluir las capturas con URLs de Cloudinary
       };
 
       const res = await saveReport(newReport);
@@ -63,7 +68,7 @@ export const FormularioExteriorAsistente = () => {
     { name: "Actividades", icon: <ClipboardDocumentListIcon className="h-6 w-6" /> },
     { name: "Objetivos", icon: <TrophyIcon className="h-6 w-6" /> },
     { name: "Sugerencias", icon: <LightBulbIcon className="h-6 w-6" /> },
-    // { name: "Métricas", icon: <ChartBarIcon className="h-6 w-6" /> }, // deshabilitado
+    { name: "Métricas", icon: <ChartBarIcon className="h-6 w-6" /> },
     { name: "Ver Datos", icon: <EyeIcon className="h-6 w-6" /> },
   ];  
   return (
@@ -98,7 +103,7 @@ export const FormularioExteriorAsistente = () => {
         {activeTab === "Actividades" && <FormularioActividades />}
         {activeTab === "Objetivos" && <FormularioObjetivos />}
         {activeTab === "Sugerencias" && <FormularioSugerencias />}
-        {/* {activeTab === "Métricas" && <FormularioMetricas />} */}
+        {activeTab === "Métricas" && <FormularioMetricas />}
         {activeTab === "Ver Datos" && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -7,11 +7,12 @@ import {
   ChartBarIcon,
   EyeIcon,
   CloudIcon,
+  ArrowPathIcon, // Icono para indicar carga
 } from "@heroicons/react/24/outline";
 import { FormularioActividades } from "../components/asistente/FormularioActividades";
 import { FormularioObjetivos } from "../components/asistente/FormularioObjetivos";
 import { FormularioSugerencias } from "../components/asistente/FormularioSugerencias";
-// import { FormularioMetricas } from "../components/asistente/FormularioMetricas";
+import { FormularioMetricas } from "../components/asistente/FormularioMetricas";
 import { VistaPreviaPDF } from "../components/asistente/VistaPreviaPDF";
 import { Layout } from "../layout/Layout";
 import { useStore } from "../store";
@@ -29,18 +30,17 @@ export const ReporteDetalleAdmin = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [adminTexto, setAdminTexto] = useState("");
-  // Comentado temporalmente: manejo de imágenes del administrador
-  // const [adminImagenes, setAdminImagenes] = useState([]); // [{preview, file/base64}]
+  const [adminImagenes, setAdminImagenes] = useState([]);
+  const [isUploading, setIsUploading] = useState(false); // <--- NUEVO ESTADO PARA CARGA
 
   const {
     setActividades,
     setGoals,
     setSugerencias,
-    // setScreenshots, // métricas deshabilitadas
+    setScreenshots,
     resetForms,
   } = useStore();
 
-  // Memo del documento PDF para evitar recreaciones innecesarias
   const memoDoc = useMemo(() => {
     if (!reporte) return null;
     return (
@@ -49,10 +49,10 @@ export const ReporteDetalleAdmin = () => {
         clienteNombre={reporte.cliente?.nombre}
         asistenteNombre={reporte.asistente?.nombre}
         fecha={reporte.fecha_creacion}
-        contenido={reporte.contenido}
+        contenido={reporte.contenido}  
         adminTexto={adminTexto || reporte.admin_texto}
-        // adminImagenes deshabilitado temporalmente
-        allowImages={false}
+        adminImagenes={adminImagenes}
+        allowImages={true}
       />
     );
   }, [
@@ -62,23 +62,24 @@ export const ReporteDetalleAdmin = () => {
     reporte?.fecha_creacion,
     JSON.stringify(reporte?.contenido || {}),
     adminTexto,
-    // adminImagenes deshabilitado
+    adminImagenes,
   ]);
 
   useEffect(() => {
     const fetchReporte = async () => {
       try {
         const { data } = await api.get(`/reportes/${reporteId}`);
+        console.log("Datos del reporte obtenidos:", data);
         setReporte(data);
         if (data.contenido) {
           setActividades(data.contenido.actividades || []);
           setGoals(data.contenido.goals || []);
           setSugerencias(data.contenido.sugerencias || []);
-          // setScreenshots(data.contenido.screenshots || []); // métricas deshabilitadas
+          setScreenshots(data.contenido.screenshots || []);
         }
         if (typeof data.admin_texto === 'string') setAdminTexto(data.admin_texto);
-        // Comentado temporalmente: carga inicial de imágenes del administrador
-        // if (Array.isArray(data.admin_imagenes)) setAdminImagenes(data.admin_imagenes.map((src) => ({ preview: src })));
+        // La carga inicial solo necesita el URL (preview)
+        if (Array.isArray(data.admin_imagenes)) setAdminImagenes(data.admin_imagenes.map((src) => ({ preview: src })));
       } catch (e) {
         setError(e.message || 'Error al obtener el reporte.');
       } finally {
@@ -89,15 +90,18 @@ export const ReporteDetalleAdmin = () => {
   }, [reporteId, setActividades, setGoals, setSugerencias]);
 
   const handleUpdateReport = async () => {
+    if (isUploading) {
+        alert("Por favor, espera a que termine la subida de imágenes.");
+        return;
+    }
     try {
       const { actividades, goals, sugerencias } = useStore.getState();
-
-      const reporteActualizado = {
+      const reporteActualizado = {        
         titulo: reporte.titulo,
         contenido: { actividades, goals, sugerencias },
         admin_texto: adminTexto,
-        // Comentado temporalmente: envío de imágenes del administrador
-        // admin_imagenes: adminImagenes.map((img) => img.preview),
+        // Al guardar, solo enviamos el array de URLs (preview) a MongoDB
+        admin_imagenes: adminImagenes.map((img) => img.preview),
       };
 
       await api.put(`/reportes/${reporteId}`, reporteActualizado);
@@ -108,22 +112,49 @@ export const ReporteDetalleAdmin = () => {
     }
   };
 
-  // Comentado temporalmente: carga de archivos de imágenes
-  // const handleAdminImagesChange = async (e) => {
-  //   const files = Array.from(e.target.files || []);
-  //   const reads = await Promise.all(files.map((file) => new Promise((res, rej) => {
-  //     const reader = new FileReader();
-  //     reader.onload = () => res({ preview: reader.result, name: file.name });
-  //     reader.onerror = rej;
-  //     reader.readAsDataURL(file);
-  //   })));
-  //   setAdminImagenes((prev) => [...prev, ...reads]);
-  // };
+  // <--- MODIFICACIÓN CLAVE: SUBIDA A CLOUDINARY A TRAVÉS DE FLASK --->
+  const handleAdminImagesChange = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-  // Comentado temporalmente: eliminación de imágenes del administrador
-  // const removeAdminImage = (index) => {
-  //   setAdminImagenes((prev) => prev.filter((_, i) => i !== index));
-  // };
+    setIsUploading(true);
+    const uploadedUrls = [];
+
+    try {
+      for (const file of files) {
+        // 1. Crear FormData para el archivo
+        const formData = new FormData();
+        // 'image' debe coincidir con el nombre esperado en app.py: request.files['image']
+        formData.append('image', file); 
+
+        // 2. Subir a Cloudinary a través del backend
+        const { data } = await api.post('/upload-image', formData, {
+          headers: {
+            // Asegura que el navegador establezca el Content-Type correcto para FormData
+            'Content-Type': 'multipart/form-data', 
+          },
+        });
+        
+        // 3. Si la subida es exitosa, guardar la URL de Cloudinary
+        uploadedUrls.push({ preview: data.url, name: file.name });
+      }
+
+      // 4. Actualizar el estado con las URLs de Cloudinary
+      setAdminImagenes((prev) => [...prev, ...uploadedUrls]);
+    } catch (error) {
+      console.error("Error al subir la imagen a Cloudinary:", error);
+      alert('Error al subir una o más imágenes. Verifica la consola para más detalles.');
+    } finally {
+      setIsUploading(false);
+      // Limpiar el input de archivo para poder subir la misma imagen de nuevo si es necesario
+      e.target.value = null; 
+    }
+  };
+  // <--- FIN DE MODIFICACIÓN CLAVE --->
+
+  const removeAdminImage = (index) => {
+    setAdminImagenes((prev) => prev.filter((_, i) => i !== index));
+  };
 
   if (isLoading) {
     return (
@@ -150,14 +181,11 @@ export const ReporteDetalleAdmin = () => {
     );
   }
 
-  console.log('reporte desde ReporteDetalleAdmin', reporte);
-  console.log('adminTexto desde ReporteDetalleAdmin', adminTexto);
-
   const tabs = [
     { name: "Actividades", icon: ClipboardDocumentListIcon },
     { name: "Objetivos", icon: TrophyIcon },
     { name: "Sugerencias", icon: LightBulbIcon },
-    // { name: "Métricas", icon: ChartBarIcon }, // deshabilitado
+    { name: "Métricas", icon: ChartBarIcon },
     { name: "Datos", icon: CloudIcon },
     { name: "Ver PDF", icon: EyeIcon },
   ];
@@ -203,15 +231,23 @@ export const ReporteDetalleAdmin = () => {
           {activeTab === "Actividades" && <FormularioActividades />}
           {activeTab === "Objetivos" && <FormularioObjetivos />}
           {activeTab === "Sugerencias" && <FormularioSugerencias />}
-          {/* {activeTab === "Métricas" && <FormularioMetricas />} */}
+          {activeTab === "Métricas" && <FormularioMetricas />}
           {activeTab === "Datos" && (
             <div className="flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={handleUpdateReport}
                   className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300"
+                  disabled={isUploading} // Deshabilita el botón mientras sube
                 >
-                  Guardar Cambios
+                  {isUploading ? (
+                     <>
+                        <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" />
+                        Subiendo...
+                     </>
+                  ) : (
+                    "Guardar Cambios"
+                  )}
                 </button>
                 <button
                   type="button"
@@ -226,17 +262,29 @@ export const ReporteDetalleAdmin = () => {
                   Notas del Administrador
                 </label>
                 <textarea
-                  id="admin-notes" // Añadido id para accesibilidad con la etiqueta
+                  id="admin-notes"
                   value={adminTexto}
                   onChange={(e) => setAdminTexto(e.target.value)}
                   className="w-full min-h-[140px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 ease-in-out resize-y text-gray-700 placeholder-gray-400"
                   placeholder="Escribe comentarios o notas importantes para el cliente aquí..."
                 />
 
-                {/* Comentado temporalmente: UI para imágenes del administrador */}
-                {/* <div className="space-y-2">
+                {/* UI para imágenes del administrador */}
+                <div className="space-y-2">
                   <label className="block font-semibold text-slate-700">Imágenes del Administrador</label>
-                  <input type="file" multiple accept="image/*" onChange={handleAdminImagesChange} />
+                  <input 
+                    type="file" 
+                    multiple 
+                    accept="image/*" 
+                    onChange={handleAdminImagesChange}
+                    disabled={isUploading} // Deshabilita el input mientras sube
+                  />
+                  {isUploading && (
+                     <p className="flex items-center text-sm text-blue-600">
+                        <ArrowPathIcon className="h-4 w-4 mr-1 animate-spin" />
+                        Subiendo imágenes... espera un momento.
+                     </p>
+                  )}
                   {adminImagenes.length > 0 && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-2">
                       {adminImagenes.map((img, i) => (
@@ -253,7 +301,7 @@ export const ReporteDetalleAdmin = () => {
                       ))}
                     </div>
                   )}
-                </div> */}
+                </div>
               </div>
               <VistaPreviaPDF />
             </div>
@@ -261,17 +309,7 @@ export const ReporteDetalleAdmin = () => {
           {activeTab === "Ver PDF" && reporte && (
             <div className="h-[80vh] flex flex-col gap-3">
               <div className="flex items-center gap-3">
-                <PDFReport reporte={reporte} adminTexto={adminTexto} />
-
-                {/* <PDFDownloadLink document={memoDoc} fileName={`${reporte?.titulo || 'reporte'}.pdf`} className="px-3 py-1 rounded text-white bg-blue-600 hover:bg-blue-700">
-                  {({ loading, error }) => loading ? 'Generando PDF…' : (error ? 'Error al generar PDF' : 'Descargar PDF')}
-                </PDFDownloadLink>
-              </div>
-              <div className="flex-1">
-                <PdfIframe
-                  style={{ width: '100%', height: '100%', border: '0' }}
-                  document={memoDoc}
-                /> */}
+                <PDFReport reporte={reporte} adminTexto={reporte.adminTexto} />
               </div>
             </div>
           )}

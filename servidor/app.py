@@ -7,6 +7,9 @@ from bson.objectid import ObjectId
 from datetime import datetime
 from functools import wraps  
 import os
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 try:
     from dotenv import load_dotenv
@@ -17,11 +20,19 @@ except Exception:
 app = Flask(__name__)
 CORS(app)
 
-app.config["MONGO_URI"] = os.environ.get("MONGO_URI", "mongodb+srv://javierjmc:3987111189@cluster0.0w9su.mongodb.net/gtc")
-app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "super-secret")
+app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
+app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
 jwt = JWTManager(app)
 mongo = PyMongo(app)
 bcrypt = Bcrypt(app)
+
+# Configuración de Cloudinary
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET")
+)
+
 
 # --- Decoradores de roles personalizados ---
 def asistente_required():
@@ -45,6 +56,60 @@ def admin_required():
             return fn(*args, **kwargs)
         return decorator
     return wrapper
+
+# --- Rutas de Cloudinary ---
+@app.route('/upload-image', methods=['POST'])
+@jwt_required()
+# @asistente_required() <--- SE ELIMINÓ ESTE DECORADOR
+def upload_image():
+    """Endpoint para subir imágenes a Cloudinary"""
+    
+    # NUEVA LÓGICA PARA PERMITIR ADMINISTRADOR O ASISTENTE
+    claims = get_jwt()
+    if claims.get("role") not in ["asistente", "administrador"]:
+        return jsonify({"msg": "Acceso denegado: solo asistentes o administradores"}), 403
+    # FIN DE NUEVA LÓGICA
+    
+    try:
+        if 'image' not in request.files:
+            return jsonify({"msg": "No se encontró ninguna imagen"}), 400
+        
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({"msg": "No se seleccionó ningún archivo"}), 400
+        
+        # Validar tipo de archivo
+        allowed_types = {'image/jpeg', 'image/jpg', 'image/png', 'image/gif'}
+        if file.content_type not in allowed_types:
+            return jsonify({"msg": "Tipo de archivo no permitido. Solo se permiten JPG, PNG y GIF"}), 400
+        
+        # Validar tamaño (10MB máximo)
+        file.seek(0, 2)  # Ir al final del archivo
+        file_size = file.tell()
+        file.seek(0)  # Volver al inicio
+        
+        if file_size > 10 * 1024 * 1024:  # 10MB
+            return jsonify({"msg": "El archivo es demasiado grande. Máximo 10MB"}), 400
+        
+        # Subir a Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            file,
+            folder="gtc-metricas",
+            resource_type="image",
+            transformation=[
+                {"quality": "auto"},
+                {"fetch_format": "auto"}
+            ]
+        )
+        
+        return jsonify({
+            "msg": "Imagen subida exitosamente",
+            "url": upload_result['secure_url'],
+            "public_id": upload_result['public_id']
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"msg": f"Error al subir la imagen: {str(e)}"}), 500
 
 # --- Rutas de Autenticación ---
 
@@ -174,6 +239,10 @@ def crear_reporte():
     cliente_id = datos.get('cliente_id')
     titulo = datos.get('titulo')
     contenido = datos.get('contenido')
+    actividades = datos.get('actividades', [])
+    objetivos = datos.get('objetivos', [])
+    sugerencias = datos.get('sugerencias', [])
+    metricas_imagenes = datos.get('metricas_imagenes', [])  # URLs de Cloudinary
     
     current_user_id = get_jwt_identity()
     
@@ -186,6 +255,10 @@ def crear_reporte():
         'asistente_id': ObjectId(current_user_id),
         'titulo': titulo,
         'contenido': contenido,
+        'actividades': actividades,
+        'objetivos': objetivos,
+        'sugerencias': sugerencias,
+        'metricas_imagenes': metricas_imagenes,
         'fecha_creacion': datetime.utcnow(),
         'estado': 'pendiente'
     }
@@ -247,7 +320,10 @@ def obtener_reporte_por_id(reporte_id):
             'asistente': {
                 'id': str(reporte.get('asistente_id')) if reporte.get('asistente_id') else None,
                 'nombre': asistente.get('nombre') if asistente else 'Asistente Desconocido'
-            }
+            },
+            'admin_texto': reporte.get('admin_texto') if reporte.get('admin_texto') else None,
+            'admin_imagenes': reporte.get('admin_imagenes') if reporte.get('admin_imagenes') else [], # <--- AÑADIDO
+            'metricas_imagenes': reporte.get('metricas_imagenes') if reporte.get('metricas_imagenes') else [],
         }
         return jsonify(data), 200
     except Exception as e:
@@ -267,10 +343,11 @@ def editar_reporte(reporte_id):
     # Campos opcionales que el admin puede editar
     if 'admin_texto' in datos:
         update_fields['admin_texto'] = datos.get('admin_texto')
-    # Comentado temporalmente: manejo de imágenes del administrador
-    # if 'admin_imagenes' in datos:
-    #     # admin_imagenes: array de strings (URLs/Base64)
-    #     update_fields['admin_imagenes'] = datos.get('admin_imagenes')
+    
+    # HABILITADO: manejo de imágenes del administrador
+    if 'admin_imagenes' in datos:
+        # admin_imagenes: array de strings (URLs de Cloudinary)
+        update_fields['admin_imagenes'] = datos.get('admin_imagenes')
 
     mongo.db.reportes.update_one(
         {'_id': ObjectId(reporte_id)},
@@ -324,7 +401,7 @@ def obtener_reportes_cliente():
             'estado': reporte.get('estado'),
             'fecha_creacion': reporte.get('fecha_creacion').isoformat() if reporte.get('fecha_creacion') else None,
             'admin_texto': reporte.get('admin_texto') if reporte.get('admin_texto') else None,
-            'admin_imagenes': reporte.get('admin_imagenes') if reporte.get('admin_imagenes') else [],
+            'admin_imagenes': reporte.get('admin_imagenes') if reporte.get('admin_imagenes') else [], # <--- AÑADIDO
         })
 
     return jsonify(result), 200

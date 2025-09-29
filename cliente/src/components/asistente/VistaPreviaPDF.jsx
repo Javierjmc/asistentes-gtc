@@ -79,7 +79,7 @@ export const VistaPreviaPDF = () => {
       </section>
 
       {/* Sección de Capturas de Pantalla */}
-      {/* <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <section className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
         <h2 className="font-bold text-xl text-blue-700 flex items-center gap-2 mb-4">
           <CameraIcon className="h-6 w-6" />
           Capturas de Pantalla
@@ -107,7 +107,7 @@ export const VistaPreviaPDF = () => {
             ))}
           </div>
         )}
-      </section> */}
+      </section>
     </div>
   );
 };

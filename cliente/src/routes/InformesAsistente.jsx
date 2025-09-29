@@ -124,6 +124,18 @@ export const InformesAsistente = () => {
                   <p className="text-sm text-slate-500">Sin sugerencias.</p>
                 )}
               </div>
+              <div className="md:col-span-2">
+                <h4 className="font-semibold text-slate-700 mb-2">Métricas</h4>
+                {Array.isArray(seleccionado.contenido?.screenshots) && seleccionado.contenido.screenshots.length > 0 ? (
+                  <ul className="list-disc list-inside text-sm text-slate-800">
+                    {seleccionado.contenido.screenshots.map((s, i) => (
+                      <li key={i}>{String(s?.texto ?? s ?? '')}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-slate-500">Sin métricas</p>
+                )}
+              </div>
             </div>
           </div>
         )}

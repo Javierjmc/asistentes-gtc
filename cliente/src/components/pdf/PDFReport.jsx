@@ -4,9 +4,8 @@ import MyDocument from './MyDocument'; // ✅ cambia el import
 
 const PDFReport = ({ reporte, adminTexto }) => {
   const hasData = Boolean(reporte && reporte.titulo);
-
-  console.log('reporte desde PDFReport', reporte);
-  console.log('adminTexto desde PDFReport', adminTexto);
+  console.log("PDFReport - reporte:", reporte);
+ 
 
   // Adaptador simple para convertir tu reporte en el formato esperado por MyDocument
   const mapReporteToReport = (reporte) => ({
@@ -15,6 +14,8 @@ const PDFReport = ({ reporte, adminTexto }) => {
     assistant: reporte.asistente?.nombre,
     department: "Ventas",
     date: reporte.fecha_creacion,
+    admin_texto: reporte.admin_texto,
+    admin_imagenes: (reporte.admin_imagenes || []).map((img) => img || ""),
     period: "Semana actual",
     summary: "Resumen automático del reporte.",
     activities: (reporte.contenido?.actividades || []).map((a) => ({
@@ -25,6 +26,9 @@ const PDFReport = ({ reporte, adminTexto }) => {
       planned: g.title || "",
       achieved: g.description || "",
     })),
+    metricas: (reporte.metricas_imagenes || []).map((m) => ({
+      url: m.url || "",
+    })),  
     suggestions: (reporte.contenido?.sugerencias || []).map((s) => s.texto || ""),
     monitoring: {
       hoursWorked: "No disponible",
@@ -42,6 +46,8 @@ const PDFReport = ({ reporte, adminTexto }) => {
       hours: "Lunes a Viernes, 9am - 6pm",
     },
   });
+
+
 
   return (
     <PDFViewer style={{ width: '100%', height: '100vh' }}>
@@ -61,6 +67,8 @@ const PDFReport = ({ reporte, adminTexto }) => {
             period: "",
             summary: "No hay datos disponibles.",
             activities: [],
+            metricas: [],
+            adminImagenes: [],
             objectives: [],
             suggestions: [],
             monitoring: {

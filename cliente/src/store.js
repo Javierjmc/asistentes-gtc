@@ -97,9 +97,17 @@ export const useStore = create((set) => ({
   // --- ACCIONES DE GESTIÓN DE REPORTES ---
   saveReport: async (newReport) => {
     try {
-      const response = await api.post('/reportes/', newReport);
-      // Nota: /reportes/ (GET) es solo para administradores; evitar llamada que causa 403.
-      // Si se requiere refrescar la lista para admins, esa vista debería invocar fetchReports aparte.
+      // Incluir las URLs de las imágenes de Cloudinary en el reporte
+      const reporteConImagenes = {
+        ...newReport,
+        metricas_imagenes: newReport.screenshots?.map(screenshot => ({
+          url: screenshot.cloudinaryUrl,
+          title: screenshot.title,
+          public_id: screenshot.public_id
+        })) || []
+      };
+      
+      const response = await api.post('/reportes/', reporteConImagenes);
       return { success: true, data: response.data };
     } catch (error) {
       console.error("Error al guardar el reporte:", error);
@@ -211,9 +219,9 @@ export const useStore = create((set) => ({
   addScreenshots: (newScreenshots) => set((state) => ({
     screenshots: [...state.screenshots, ...newScreenshots],
   })),
-  updateScreenshotTitle: (index, title) => set((state) => ({
+  updateScreenshotTitle: (index, titleOrObject) => set((state) => ({
     screenshots: state.screenshots.map((item, i) =>
-      i === index ? { ...item, title } : item
+      i === index ? { ...item, ...(typeof titleOrObject === 'string' ? { title: titleOrObject } : titleOrObject) } : item
     ),
   })),
   removeScreenshot: (index) => set((state) => {
@@ -226,6 +234,30 @@ export const useStore = create((set) => ({
     };
   }),
   setScreenshots: (screenshots) => set({ screenshots }),
+  
+  // Funciones para subir imágenes a Cloudinary
+  uploadImageToCloudinary: async (file) => {
+    set({ isLoading: true, apiError: null });
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      const response = await api.post('/upload-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      set({ isLoading: false });
+      return { success: true, data: response.data };
+    } catch (error) {
+      set({ 
+        isLoading: false, 
+        apiError: "Error al subir la imagen." 
+      });
+      return { success: false, error: "Error al subir la imagen." };
+    }
+  },
 
   // Limpiar todos los formularios
   resetForms: () => set({
