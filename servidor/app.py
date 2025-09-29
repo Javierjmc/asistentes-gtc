@@ -514,7 +514,11 @@ def get_my_clients():
 
     except Exception as e:
         # Manejo de errores para cualquier excepción inesperada
-        return jsonify({"msg": f"Error del servidor: {str(e)}"}), 500
+        return jsonify({"msg": f"Error del servidor: {str(e)}"}), 
+
+@app.route('/test-cors', methods=['GET', 'OPTIONS'])
+def test_cors():
+    return jsonify({"msg": "CORS funciona"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
