@@ -20,7 +20,7 @@ except Exception:
 app = Flask(__name__)
 FRONTEND_URL = "https://asistentes-gtc.vercel.app" 
 
-CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "https://asistentes-gtc.vercel.app"}}, supports_credentials=True)
 
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
