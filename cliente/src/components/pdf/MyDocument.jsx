@@ -235,9 +235,6 @@ const MyDocument = ({ report = {} }) => (
 
       <View style={styles.section}>
         <Text style={styles.title}>Datos del Reporte</Text>
-        <Text style={styles.periodText}>
-          PERIODO: {report?.period || "N/A"}
-        </Text>
         <Text style={styles.text}>
           Fecha de Entrega:{" "}
           <Text style={{ fontWeight: "bold" }}>
