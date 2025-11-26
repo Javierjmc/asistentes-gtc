@@ -305,32 +305,10 @@ const MyDocument = ({ report = {} }) => (
       <FooterComponent report={report} />
     </Page>
 
-    {/* PÁGINA 3: MÉTRICAS (Imágenes del Asistente - PEQUEÑAS Y CENTRADAS) */}
-    {
-      report?.metricas && report.metricas.length > 0 && (
-        <Page size="A4" style={styles.page}>
-          <View style={styles.section} wrap={false}>
-            <Text style={styles.title}>2. Métricas (Información del Asistente)</Text>
-          </View>
-
-          {/* Aplicación del estilo de cuadrícula para las métricas */}
-          <View style={styles.imageGrid} wrap>
-            {report?.metricas?.map((imagen, i) => (
-              <View key={i} style={styles.imageWrapper}>
-                <Image src={imagen.url} style={styles.smallImage} />
-              </View>
-            ))}
-          </View>
-
-          <FooterComponent report={report} />
-        </Page>
-      )
-    }
-
-    {/* PÁGINA 4: OBJETIVOS Y SUGERENCIAS */}
+        {/* PÁGINA 3: OBJETIVOS Y SUGERENCIAS */}
     <Page size="A4" style={styles.page}>
       <View style={styles.section} wrap={false}>
-        <Text style={styles.title}>3. Objetivos Planificados vs Cumplidos</Text>
+        <Text style={styles.title}>2. Objetivos Planificados vs Cumplidos</Text>
         <View style={styles.table}>
           <View style={styles.tableRow} fixed>
             <View style={styles.tableColHeaderNarrow}>
@@ -361,7 +339,7 @@ const MyDocument = ({ report = {} }) => (
       </View>
 
       <View style={styles.section} wrap={false}>
-        <Text style={styles.title}>4. Sugerencia Técnica</Text>
+        <Text style={styles.title}>3. Sugerencia Técnica</Text>
         {report?.suggestions?.map((sug, i) => (
           <Text key={i} style={styles.text}>
             • {sug}
@@ -371,6 +349,28 @@ const MyDocument = ({ report = {} }) => (
 
       <FooterComponent report={report} />
     </Page>
+
+    {/* PÁGINA 4: MÉTRICAS (Imágenes del Asistente - PEQUEÑAS Y CENTRADAS) */}
+    {
+      report?.metricas && report.metricas.length > 0 && (
+        <Page size="A4" style={styles.page}>
+          <View style={styles.section} wrap={false}>
+            <Text style={styles.title}>4. Métricas (Información del Asistente)</Text>
+          </View>
+
+          {/* Aplicación del estilo de cuadrícula para las métricas */}
+          <View style={styles.imageGrid} wrap>
+            {report?.metricas?.map((imagen, i) => (
+              <View key={i} style={styles.imageWrapper}>
+                <Image src={imagen.url} style={styles.smallImage} />
+              </View>
+            ))}
+          </View>
+
+          <FooterComponent report={report} />
+        </Page>
+      )
+    }   
 
     {/* PÁGINA 5: OBSERVACIONES Y MONITOREO (admin_texto y admin_imagenes) */}
     {
