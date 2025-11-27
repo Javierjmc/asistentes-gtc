@@ -228,7 +228,7 @@ const MyDocument = ({ report = {} }) => (
             DEPARTAMENTO DE CALIDAD
           </Text>
           <Text style={styles.headerText}>
-            Reporte Mensual Septiembre {report.texto}
+            Reporte Mensual Noviembre {report.texto}
           </Text>
         </View>
       </View>
