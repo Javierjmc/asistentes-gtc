@@ -147,6 +147,16 @@ export const useStore = create((set) => ({
       return { success: false, error: 'No se pudo enviar el reporte.' };
     }
   },
+  deleteReport: async (reporteId) => {
+    try {
+      await api.delete(`/reportes/${reporteId}`);
+      set((state) => ({ reports: state.reports.filter(r => r._id !== reporteId) }));
+      return { success: true };
+    } catch (error) {
+      console.error('Error al eliminar el reporte:', error);
+      return { success: false, error: 'No se pudo eliminar el reporte.' };
+    }
+  },
   setReportState: (reporteId, estado) => set((state) => {
     const updatedReports = state.reports.map((reporte) => {
       if (reporte._id === reporteId) {

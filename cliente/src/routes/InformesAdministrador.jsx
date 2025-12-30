@@ -5,9 +5,24 @@ import { Titulo } from "../components/Titulo";
 import { useStore } from "../store";
 
 export const InformesAdministrador = () => {
-  const { reports, fetchReports, /* approveReport, */ sendReport } = useStore();
+  const { reports, fetchReports, /* approveReport, */ sendReport, deleteReport } = useStore();
 
   const [filterAsistente, setFilterAsistente] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState(null);
+
+  const openDeleteModal = (reporte) => { setReportToDelete(reporte); setShowDeleteModal(true); };
+  const closeDeleteModal = () => { setReportToDelete(null); setShowDeleteModal(false); };
+
+  const handleConfirmDelete = async () => {
+    if (!reportToDelete) return;
+    const res = await deleteReport(reportToDelete._id);
+    if (!res.success) {
+      alert(res.error || 'Error al eliminar el reporte.');
+      return;
+    }
+    closeDeleteModal();
+  };
   const [filterCliente, setFilterCliente] = useState('');
 
   const filteredReports = useMemo(() => {
@@ -31,10 +46,7 @@ export const InformesAdministrador = () => {
   //   if (!res.success) alert(res.error);
   // };
 
-  const handleSendReport = async (reporteId) => {
-    const res = await sendReport(reporteId);
-    if (!res.success) alert(res.error);
-  };
+
 
   return (
     <Layout rol="administrador">
@@ -92,15 +104,13 @@ export const InformesAdministrador = () => {
                       Ver
                     </button>
                   </Link>
-                  {/* Botón Aprobar deshabilitado */}
-                  {reporte.estado !== 'enviado' && (
-                    <button 
-                      onClick={() => handleSendReport(reporte._id || index)}
-                      className="bg-green-500 text-white p-1 rounded-full hover:bg-green-600 transition"
-                    >
-                      Enviar
-                    </button>
-                  )}
+                  {/* Botón Eliminar */}
+                  <button
+                    onClick={() => openDeleteModal(reporte)}
+                    className="bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition"
+                  >
+                    Eliminar
+                  </button>
                 </div>
               </li>
             ))
@@ -110,6 +120,20 @@ export const InformesAdministrador = () => {
             </li>
           )}
         </ul>
+
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white p-4 rounded shadow max-w-sm w-full">
+              <h3 className="font-semibold mb-2">Confirmar eliminación</h3>
+              <p className="mb-4">¿Deseas eliminar el reporte de <strong>{reportToDelete?.asistente?.nombre || reportToDelete?.cliente?.nombre || reportToDelete?.titulo}</strong>? Esta acción es irreversible.</p>
+              <div className="flex justify-end gap-2">
+                <button onClick={closeDeleteModal} className="px-3 py-1 bg-gray-200 rounded">Cancelar</button>
+                <button onClick={handleConfirmDelete} className="px-3 py-1 bg-red-600 text-white rounded">Eliminar</button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </section>
     </Layout>
   );
