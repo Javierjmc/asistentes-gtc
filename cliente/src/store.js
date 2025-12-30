@@ -154,7 +154,13 @@ export const useStore = create((set) => ({
       return { success: true };
     } catch (error) {
       console.error('Error al eliminar el reporte:', error);
-      return { success: false, error: 'No se pudo eliminar el reporte.' };
+      // Log completo para debugging
+      console.error('Axios response:', error?.response);
+      console.error('Request config:', error?.config);
+      // Intentar leer mensaje devuelto por el servidor para mostrar detalle
+      const serverMsg = error?.response?.data?.msg || error?.response?.data?.message || error?.message || 'No se pudo eliminar el reporte.';
+      const status = error?.response?.status;
+      return { success: false, error: serverMsg, status };
     }
   },
   setReportState: (reporteId, estado) => set((state) => {
