@@ -355,7 +355,7 @@ const MyDocument = ({ report = {} }) => (
       report?.metricas && report.metricas.length > 0 && (
         <Page size="A4" style={styles.page}>
           <View style={styles.section} wrap={false}>
-            <Text style={styles.title}>4. Métricas (Información del Asistente)</Text>
+            <Text style={styles.title}>4. Métricas</Text>
           </View>
 
           {/* Aplicación del estilo de cuadrícula para las métricas */}
