@@ -46,19 +46,19 @@ export const InformesAdministrador = () => {
             value={filterAsistente}
             onChange={(e) => setFilterAsistente(e.target.value)}
             placeholder="Filtrar por asistente"
-            className="px-2 py-1 rounded border border-slate-400 text-sm"
+            className="px-2 py-2 bg-white rounded border border-slate-400 text-sm"
           />
           <input
             type="text"
             value={filterCliente}
             onChange={(e) => setFilterCliente(e.target.value)}
             placeholder="Filtrar por cliente / empresa"
-            className="px-2 py-1 rounded border border-slate-400 text-sm"
+            className="px-2 py-2 bg-white rounded border border-slate-400 text-sm"
           />
           {(filterAsistente || filterCliente) && (
             <button
               onClick={() => { setFilterAsistente(''); setFilterCliente(''); }}
-              className="px-2 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+              className="px-2 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm"
             >
               Limpiar
             </button>
