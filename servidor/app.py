@@ -20,7 +20,17 @@ except Exception:
 app = Flask(__name__)
 FRONTEND_URL = "https://asistentes-gtc.vercel.app" 
 
-CORS(app, resources={r"/*": {"origins": "https://asistentes-gtc.vercel.app"}}, supports_credentials=True)
+# Configurar orígenes permitidos para CORS. Incluye despliegue y orígenes locales para desarrollo.
+allowed_origins = [
+    os.environ.get('FRONTEND_URL', FRONTEND_URL),
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+]
+# Filtrar None o valores vacíos
+allowed_origins = [o for o in allowed_origins if o]
+# Permitir cabeceras Authorization en preflight y métodos relevantes
+CORS(app, resources={r"/*": {"origins": allowed_origins, "allow_headers": ["Content-Type", "Authorization"], "methods": ["GET","POST","PUT","DELETE","OPTIONS"]}}, supports_credentials=True)
 
 app.config["MONGO_URI"] = os.environ.get("MONGO_URI")
 app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY")
@@ -378,6 +388,24 @@ def enviar_reporte(reporte_id):
         {'$set': {'estado': 'enviado', 'fecha_envio': datetime.utcnow()}}
     )
     return jsonify({"msg": "Reporte reenviado al cliente."}), 200
+
+# Manejar preflight OPTIONS explícitamente para evitar que decoradores (jwt) bloqueen la petición preflight
+@reportes_bp.route('/<reporte_id>', methods=['OPTIONS'])
+def opciones_reporte(reporte_id):
+    return ('', 200)
+
+@reportes_bp.route('/<reporte_id>', methods=['DELETE'])
+@jwt_required()
+@admin_required()
+def eliminar_reporte(reporte_id):
+    """Elimina un reporte por su ID (solo administradores)."""
+    try:
+        result = mongo.db.reportes.delete_one({'_id': ObjectId(reporte_id)})
+        if result.deleted_count == 0:
+            return jsonify({"msg": "Reporte no encontrado"}), 404
+        return jsonify({"msg": "Reporte eliminado correctamente."}), 200
+    except Exception as e:
+        return jsonify({"msg": f"Error al eliminar el reporte: {str(e)}"}), 500
 
 # Nuevo: obtener reportes del cliente autenticado (rol cliente)
 @reportes_bp.route('/mios', methods=['GET'])
