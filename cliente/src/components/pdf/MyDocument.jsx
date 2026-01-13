@@ -422,7 +422,7 @@ const MyDocument = ({ report = {} }) => (
         <Text style={styles.contactDetail}>
           Correo:{" "}
           <Text style={{ fontWeight: "normal" }}>
-            calidad@globaltalentconnections.net
+            calidad@globaltalentconnections.es
           </Text>
         </Text>
         <Text style={styles.contactDetail}>
